@@ -12,7 +12,6 @@ function checkApi(req, res, db, next) {
     var keyDb = db.get('user');
     keyDb.findOne({"cle": apikey}, {}, function(e, doc) {
         console.log(doc);
-        console.log('wweeeeee');    
         if(doc == undefined) {
             res.status(418).json({"nope":"nope"});
         } else {
@@ -47,12 +46,31 @@ router.get("/getVisitesJour", function(req, res, next) {
         });
     });
 });
+router.get("/getVisitesById", function(req, res, next) {
+    var db = req.db;
+    var id = req.query.id;
+    
+    checkApi(req, res, db, function() {
+        if (id == undefined) {
+            res.status(401).json({"undefinedId":"undefinedId"});
+            return;
+        }
+        
+        try {
+            var visites = db.get("visite");
+            visites.findById(id, {}, function(e, doc) {
+                res.json(doc);
+            })
+        } catch (e) {
+            res.status(401).json({"VTFF": "ton id est pourri kiwi"});
+        }
+    });
+});
 
 router.post("/ajoutDiagnostic" ,function(req, res, next) {
     var db = req.db;
     var id = req.query.id;
     var data = req.body.data;
-    id = "5704b24ca6307f34e6f418b5";
     checkApi(req, res, db, function() {
         if (id == undefined) {
             res.status(401).json({"undefinedId":"undefinedId"});
@@ -63,11 +81,19 @@ router.post("/ajoutDiagnostic" ,function(req, res, next) {
             return;
         }
         
-        var visites = db.get("visite");
-        var diagnostics = [{"note" : "A", "categorie" : "amiante"}];
-        visites.update({"_id" : id}, diagnostics, {}, function(e, doc) {
-            res.json(doc);    
-        });
+        try {
+            var visites = db.get("visite");
+            visites.findById(id, {}, function(e, doc) {
+                var maVisiteDavant = doc;
+                var diagnosticData = {"note" : "A", "categorie" : "amiante"};
+                maVisiteDavant.diagnostics.push(diagnosticData);
+                visites.updateById(id, maVisiteDavant, {}, function(e, doc) {
+                    res.json(doc);
+                });
+            });
+        } catch (e) {
+            res.status(401).json({"VTFF": "ton id est pourri kiwi"});
+        }
     });
 });
 

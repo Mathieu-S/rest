@@ -20,7 +20,6 @@ function checkApi(req, res, db, next) {
     });
 }
 
-/* GET home page. */
 router.get('/', function(req, res, next) {
     res.end("youpi")
 });
@@ -46,6 +45,7 @@ router.get("/getVisitesJour", function(req, res, next) {
         });
     });
 });
+
 router.get("/getVisitesById", function(req, res, next) {
     var db = req.db;
     var id = req.query.id;
@@ -76,6 +76,7 @@ router.post("/ajoutDiagnostic" ,function(req, res, next) {
             res.status(401).json({"undefinedId":"undefinedId"});
             return;
         }
+        
         if (data == undefined) {
             res.status(401).json({"undefinedData":"undefinedData"});
             return;
@@ -97,4 +98,75 @@ router.post("/ajoutDiagnostic" ,function(req, res, next) {
     });
 });
 
+ router.delete("/deleteDiagnostic", function(req, res, next) {
+     var db = req.db;
+     var id = req.query.id;
+     //Problème technique
+     //var categorie = req.query.categ;
+     var pos = req.query.pos;
+     
+     checkApi(req, res, db, function() {
+        if (id == undefined) {
+            res.status(401).json({"undefinedId":"undefinedId"});
+            return;
+        }
+        
+        if (pos == undefined) {
+            res.status(401).json({"undefinedPos":"undefinedPos"});
+            return;
+        }
+        
+        try {
+            var visites = db.get("visite");
+            visites.findById(id, {}, function(e, doc) {
+                var maVisiteDavant = doc;
+                maVisiteDavant.diagnostics.splice(pos, 1);
+                visites.updateById(id, maVisiteDavant, {}, function(e, doc) {
+                    res.json(doc);
+                });
+            });
+        } catch (e) {
+            res.status(401).json({"VTFF": "ton id est pourri kiwi"});
+        }
+     })
+ })
+ 
+ router.put("/updateDiagnostic", function(req, res, next) {
+    var db = req.db;
+    var id = req.query.id;
+    var pos = req.query.pos;
+    var modif = req.body.modif;
+     
+    checkApi(req, res, db, function() {
+        if (id == undefined) {
+            res.status(401).json({"undefinedId":"undefinedId"});
+            return;
+        }
+        
+        if (pos == undefined) {
+            res.status(401).json({"undefinedPos":"undefinedPos"});
+            return;
+        }
+        
+        if (modif == undefined) {
+            res.status(401).json({"undefinedModif":"undefinedModif"});
+            return;
+        }
+        
+        try {
+            var visites = db.get("visite");
+            visites.findById(id, {}, function(e, doc) {
+                var maVisiteDavant = doc;
+                modif = JSON.parse(modif);
+                maVisiteDavant.diagnostics[pos] = modif;
+                visites.updateById(id, maVisiteDavant, {}, function(e, doc) {
+                    res.json(doc);
+                });
+            });
+        } catch (e) {
+            res.status(401).json({"VTFF": "ton id est pourri kiwi"});
+        }
+    });
+ });
+ 
 module.exports = router;

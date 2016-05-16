@@ -62,7 +62,7 @@ router.get("/getVisitesById", function(req, res, next) {
                 res.json(doc);
             })
         } catch (e) {
-            res.status(401).json({"VTFF": "ton id est pourri kiwi"});
+            res.status(401).json({"badId": "badID"});
         }
     });
 });
@@ -70,7 +70,7 @@ router.get("/getVisitesById", function(req, res, next) {
 router.post("/ajoutDiagnostic" ,function(req, res, next) {
     var db = req.db;
     var id = req.query.id;
-    var data = req.body.data;
+    var data = req.body;
     checkApi(req, res, db, function() {
         if (id == undefined) {
             res.status(401).json({"undefinedId":"undefinedId"});
@@ -86,14 +86,14 @@ router.post("/ajoutDiagnostic" ,function(req, res, next) {
             var visites = db.get("visite");
             visites.findById(id, {}, function(e, doc) {
                 var maVisiteDavant = doc;
-                var diagnosticData = {"note" : "A", "categorie" : "amiante"};
-                maVisiteDavant.diagnostics.push(diagnosticData);
+                maVisiteDavant.diagnostics.push(data);
+
                 visites.updateById(id, maVisiteDavant, {}, function(e, doc) {
                     res.json(doc);
                 });
             });
         } catch (e) {
-            res.status(401).json({"VTFF": "ton id est pourri kiwi"});
+            res.status(401).json({"badId": "badId"});
         }
     });
 });
@@ -126,11 +126,11 @@ router.post("/ajoutDiagnostic" ,function(req, res, next) {
                 });
             });
         } catch (e) {
-            res.status(401).json({"VTFF": "ton id est pourri kiwi"});
+            res.status(401).json({"badId": "badId"});
         }
      })
  })
- 
+
  router.put("/updateDiagnostic", function(req, res, next) {
     var db = req.db;
     var id = req.query.id;
@@ -164,7 +164,7 @@ router.post("/ajoutDiagnostic" ,function(req, res, next) {
                 });
             });
         } catch (e) {
-            res.status(401).json({"VTFF": "ton id est pourri kiwi"});
+            res.status(401).json({"badId": "badId"});
         }
     });
  });
